@@ -1,48 +1,66 @@
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MovieCard from "./Movie";
-
-// Debounce function to limit the frequency of API calls
-const debounce = (func, delay) => {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-};
 
 const LiveSearch = ({ movies, genres }) => {
   const [query, setQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
+  const [sortMethod, setSortMethod] = useState("");
   const [displayedMovies, setDisplayedMovies] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(false);
   const loader = useRef(null);
 
-  const moviesPerPage = 20; // Adjust the number of movies to display per page
-  const indexOfLastMovie = pageNumber * moviesPerPage;
-  const currentMovies = movies.slice(0, indexOfLastMovie);
+  const moviesPerPage = 20; // Adjust as needed
 
-  useEffect(() => {
-    setDisplayedMovies(currentMovies);
-  }, [pageNumber, movies]);
+  // Function to sort movies based on the selected sort method
+  const sortMovies = (moviesList) => {
+    switch (sortMethod) {
+      case "releaseDateDesc":
+        return moviesList.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+      case "releaseDateAsc":
+        return moviesList.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+      case "rating":
+        return moviesList.sort((a, b) => b.vote_average - a.vote_average);
+      default:
+        return moviesList;
+    }
+  };
 
-  // Intersection Observer to trigger loading more movies
+  // Function to filter and sort movies based on query, genre, and sort method
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loading) {
-          setLoading(true); // Start loading
-          setPageNumber((prev) => prev + 1);
-        }
-      },
-      {
-        root: null,
-        rootMargin: "20px",
-        threshold: 1.0,
+    const filterAndSortMovies = () => {
+      let result = movies
+        .filter(movie =>
+          movie.title.toLowerCase().includes(query.toLowerCase()) ||
+          (movie.release_date && movie.release_date.toString().toLowerCase().includes(query.toLowerCase())) ||
+          movie.overview.toLowerCase().includes(query.toLowerCase()) ||
+          movie.vote_count.toString().toLowerCase().includes(query.toLowerCase()) ||
+          movie.vote_average.toString().toLowerCase().includes(query.toLowerCase())
+        );
+
+      if (selectedGenre) {
+        result = result.filter(movie => movie.genre_ids.includes(parseInt(selectedGenre)));
       }
-    );
+
+      let sortedMovies = sortMovies(result);
+      setDisplayedMovies(sortedMovies.slice(0, pageNumber * moviesPerPage));
+    };
+
+    filterAndSortMovies();
+  }, [query, selectedGenre, pageNumber, movies, sortMethod]);
+
+  // Infinite scrolling logic
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loading) {
+        setLoading(true);
+        setPageNumber(prev => prev + 1);
+      }
+    }, {
+      root: null,
+      rootMargin: "20px",
+      threshold: 1.0
+    });
 
     if (loader.current) {
       observer.observe(loader.current);
@@ -54,45 +72,13 @@ const LiveSearch = ({ movies, genres }) => {
       }
     };
   }, [loading]);
+
+  // Update loading state when new data is fetched or filtering is done
   useEffect(() => {
-    // After updating displayedMovies or filtering logic
-    setLoading(false); // Stop loading
+    setLoading(false);
   }, [displayedMovies]);
-  // Update the displayed movies based on query and selected genre
-  useEffect(() => {
-    const filterMovies = () => {
-      let result = movies.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(query.toLowerCase()) ||
-          (movie.release_date &&
-            movie.release_date
-              .toString()
-              .toLowerCase()
-              .includes(query.toLowerCase())) ||
-          movie.overview.toLowerCase().includes(query.toLowerCase()) ||
-          movie.vote_count
-            .toString()
-            .toLowerCase()
-            .includes(query.toLowerCase()) ||
-          movie.vote_average
-            .toString()
-            .toLowerCase()
-            .includes(query.toLowerCase())
-      );
 
-      if (selectedGenre) {
-        result = result.filter((movie) =>
-          movie.genre_ids.includes(parseInt(selectedGenre))
-        );
-      }
-
-      // After filtering, update displayedMovies
-      setDisplayedMovies(result.slice(0, pageNumber * moviesPerPage));
-    };
-
-    filterMovies();
-  }, [query, selectedGenre, pageNumber, movies]);
-
+  // Handlers for query and genre change
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
   };
@@ -100,7 +86,6 @@ const LiveSearch = ({ movies, genres }) => {
   const handleGenreChange = (e) => {
     setSelectedGenre(e.target.value);
   };
-
   // Render the LiveSearch component
   return (
     <div className="p-4">
@@ -129,6 +114,7 @@ const LiveSearch = ({ movies, genres }) => {
           </div>
         </div>
       </div>
+      <div className="flex mb-4">
       <select
         value={selectedGenre}
         onChange={handleGenreChange}
@@ -141,6 +127,17 @@ const LiveSearch = ({ movies, genres }) => {
           </option>
         ))}
       </select>
+      <select
+        value={sortMethod}
+        onChange={(e) => setSortMethod(e.target.value)}
+        className="border p-2 rounded mb-4"
+      >
+        <option value="">Sort by</option>
+        <option value="releaseDateDesc">Release Date (Newest First)</option>
+  <option value="releaseDateAsc">Release Date (Oldest First)</option>
+  <option value="rating">Rating (High to Low)</option>
+      </select>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {displayedMovies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
