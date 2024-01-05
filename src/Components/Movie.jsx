@@ -1,13 +1,17 @@
+// Import necessary hooks from React
 import { useState } from "react";
 
+// Component to display individual movie details
 const MovieCard = ({ movie }) => {
   const [showFullOverview, setShowFullOverview] = useState(false);
 
   const toggleOverviewDisplay = () => {
     setShowFullOverview(!showFullOverview);
   };
+
+  // Render the movie card
   return (
-    <div className="max-w-sm max-h-sm rounded overflow-hidden shadow-lg m-4">
+    <div className="max-w-sm rounded overflow-hidden shadow-lg m-4">
       <img
         className="w-full"
         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}

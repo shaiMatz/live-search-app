@@ -20,22 +20,34 @@ const API_KEY =
     };
   
     try {
-      const movieResponse = await fetch(movieUrl, options);
-      const genreResponse = await fetch(genreUrl, options);
-  
+          // Fetching movie and genre data
+          let movies = [];
+      for (let i = 1; i <= 10; i++) {
+        const movieUrl = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${i}&sort_by=popularity.desc`;
+        const movieResponse = await fetch(movieUrl, options);
+         // Error handling for unsuccessful responses
       if (!movieResponse.ok) {
         throw new Error(`Failed to fetch movies: ${movieResponse.status}`);
       }
+      const movieData = await movieResponse.json();
+      movies.push(...movieData.results); 
+      }
+
+          // Fetch genre data
+
+      const genreResponse = await fetch(genreUrl, options);
+      
+      // Error handling for unsuccessful responses
+     
       if (!genreResponse.ok) {
         throw new Error(`Failed to fetch genres: ${genreResponse.status}`);
       }
   
-      const movieData = await movieResponse.json();
       const genreData = await genreResponse.json();
   
       return {
         props: {
-          movies: movieData.results, // Send the movie data to the page as props
+          movies: movies, // Send the movie data to the page as props
           genres: genreData.genres,  // Send the genre data to the page as props
         },
       };
@@ -53,6 +65,7 @@ const API_KEY =
     }
   }
 
+// Define props interface for type checking
 interface MyPageProps {
   movies?: any;
   genres?: any;
@@ -60,9 +73,12 @@ interface MyPageProps {
 }
 
 export default function Home({ movies,genres, error }: MyPageProps) {
+    // Display error message if there is an error
   if (error) {
     return <div>Error: {error}</div>;
   }
+    // Display error message if there is an error
+
   return <main>
 <main>
       <LiveSearch movies={movies} genres={genres} />
