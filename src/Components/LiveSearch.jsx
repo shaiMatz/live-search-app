@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import MovieCard from "./Movie";
 
 // Debounce function to limit the frequency of API calls
@@ -15,8 +15,49 @@ const debounce = (func, delay) => {
 const LiveSearch = ({ movies, genres }) => {
   const [query, setQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
-  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [displayedMovies, setDisplayedMovies] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const loader = useRef(null);
 
+  const moviesPerPage = 20; // Adjust the number of movies to display per page
+  const indexOfLastMovie = pageNumber * moviesPerPage;
+  const currentMovies = movies.slice(0, indexOfLastMovie);
+
+  useEffect(() => {
+    setDisplayedMovies(currentMovies);
+  }, [pageNumber, movies]);
+
+  // Intersection Observer to trigger loading more movies
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading) {
+          setLoading(true); // Start loading
+          setPageNumber((prev) => prev + 1);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "20px",
+        threshold: 1.0,
+      }
+    );
+
+    if (loader.current) {
+      observer.observe(loader.current);
+    }
+
+    return () => {
+      if (loader.current) {
+        observer.unobserve(loader.current);
+      }
+    };
+  }, [loading]);
+  useEffect(() => {
+    // After updating displayedMovies or filtering logic
+    setLoading(false); // Stop loading
+  }, [displayedMovies]);
   // Update the displayed movies based on query and selected genre
   useEffect(() => {
     const filterMovies = () => {
@@ -45,13 +86,12 @@ const LiveSearch = ({ movies, genres }) => {
         );
       }
 
-      setFilteredMovies(result);
+      // After filtering, update displayedMovies
+      setDisplayedMovies(result.slice(0, pageNumber * moviesPerPage));
     };
 
-    // Debouncing the filter operation
-    const debouncedFilter = debounce(filterMovies, 500);
-    debouncedFilter();
-  }, [query, movies, selectedGenre]);
+    filterMovies();
+  }, [query, selectedGenre, pageNumber, movies]);
 
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
@@ -102,9 +142,11 @@ const LiveSearch = ({ movies, genres }) => {
         ))}
       </select>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {filteredMovies.map((movie) => (
+        {displayedMovies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
+        {loading && <div className="loader"></div>}
+        <div ref={loader} />
       </div>
     </div>
   );
