@@ -6,8 +6,20 @@ const LiveSearch = ({ movies }) => {
   const [filteredMovies, setFilteredMovies] = useState([]);
 
   useEffect(() => {
-    const result = movies.filter((movie) =>
-      movie.title.toLowerCase().includes(query.toLowerCase())
+    const result = movies.filter(
+      (movie) =>
+        //filter by title and overview
+        movie.title.toLowerCase().includes(query.toLowerCase()) ||
+        movie.release_date.toLowerCase().includes(query.toLowerCase()) ||
+        movie.overview.toLowerCase().includes(query.toLowerCase()) ||
+        movie.vote_count
+          .toString()
+          .toLowerCase()
+          .includes(query.toLowerCase()) ||
+        movie.vote_average
+          .toString()
+          .toLowerCase()
+          .includes(query.toLowerCase())
     );
     setFilteredMovies(result);
   }, [query, movies]);
@@ -26,11 +38,15 @@ const LiveSearch = ({ movies }) => {
       />
       <ul className="list-disc">
         {filteredMovies.map((movie) => (
-          <li key={movie.id}>{movie.title}</li>
+          <li key={movie.id}>
+            {movie.title}
+            {movie.overview}
+            {movie.release_date}
+            {movie.vote_count}
+          </li>
         ))}
       </ul>
 
-     
     </div>
   );
 };
