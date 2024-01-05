@@ -17,7 +17,6 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
   background-image: url(../../public/background.jpg),
     linear-gradient(rgba(0, 0, 0, 0.692), rgba(0, 0, 0, 0.664));
   background-blend-mode: overlay;
@@ -26,7 +25,22 @@ body {
   background-position: center;
 }
 
-input {
+input,
+select {
   color: rgb(var(--foreground-rgb));
   background: none;
+}
+
+select option {
+  color: rgb(var(--background-end-rgb));
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p ,svg{
+  color: rgb(var(--foreground-rgb));
 }

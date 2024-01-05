@@ -1,34 +1,34 @@
-// LiveSearch.jsx or LiveSearch.tsx
 import { useState, useEffect } from "react";
 import MovieCard from "./Movie";
 
-const LiveSearch = ({ movies }) => {
+const LiveSearch = ({ movies, genres }) => {
   const [query, setQuery] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState(""); // Declare selectedGenre state
   const [filteredMovies, setFilteredMovies] = useState([]);
 
   useEffect(() => {
-    const result = movies.filter(
-      (movie) =>
-        //filter by title and overview
-        movie.title.toLowerCase().includes(query.toLowerCase()) ||
-        movie.release_date.toLowerCase().includes(query.toLowerCase()) ||
-        movie.overview.toLowerCase().includes(query.toLowerCase()) ||
-        movie.vote_count
-          .toString()
-          .toLowerCase()
-          .includes(query.toLowerCase()) ||
-        movie.vote_average
-          .toString()
-          .toLowerCase()
-          .includes(query.toLowerCase())
+    let result = movies.filter(movie =>
+      movie.title.toLowerCase().includes(query.toLowerCase()) ||
+      movie.release_date.toLowerCase().includes(query.toLowerCase()) ||
+      movie.overview.toLowerCase().includes(query.toLowerCase()) ||
+      movie.vote_count.toString().toLowerCase().includes(query.toLowerCase()) ||
+      movie.vote_average.toString().toLowerCase().includes(query.toLowerCase())
     );
+
+    if (selectedGenre) {
+      result = result.filter(movie => movie.genre_ids.includes(parseInt(selectedGenre)));
+    }
+
     setFilteredMovies(result);
-  }, [query, movies]);
+  }, [query, movies, selectedGenre]);
 
   const handleChange = (e) => {
     setQuery(e.target.value);
   };
 
+  const handleGenreChange = (e) => {
+    setSelectedGenre(e.target.value);
+  };
   return (
     <div className="p-4">
       <div className="flex justify-center items-center mb-4 ">
@@ -56,6 +56,12 @@ const LiveSearch = ({ movies }) => {
           </div>
         </div>
       </div>
+      <select variant="static"  value={selectedGenre} onChange={handleGenreChange} className="border p-2 rounded mb-4">
+        <option value="">Select Genre</option>
+        {genres.map(genre => (
+          <option key={genre.id} value={genre.id}>{genre.name}</option>
+        ))}
+      </select>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {filteredMovies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
