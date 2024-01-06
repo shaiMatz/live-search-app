@@ -19,4 +19,14 @@ describe('Movie Component', () => {
     expect(screen.getByText(/8.5/i)).toBeInTheDocument();
   });
 
+    it('renders movie poster', () => {
+        render(<Movie movie={mockMovie} />);
+        expect(screen.getByAltText(/example movie/i)).toBeInTheDocument();
+    });
+
+    
+
+
+
+
 });

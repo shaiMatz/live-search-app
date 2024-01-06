@@ -1,21 +1,21 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import LiveSearch from "./LiveSearch";
-import React from 'react';
+import React from "react";
 
 // Mock the IntersectionObserver globally to avoid errors in Jest environment
 global.IntersectionObserver = class {
-    constructor() {}
-  
-    disconnect() {}
-  
-    observe() {}
-  
-    takeRecords() {}
-  
-    unobserve() {}
-  };
+  constructor() {}
 
-  // Mock data for movies and genres
+  disconnect() {}
+
+  observe() {}
+
+  takeRecords() {}
+
+  unobserve() {}
+};
+
+// Mock data for movies and genres
 describe("LiveSearch Component", () => {
   const mockMovies = [
     {
@@ -87,29 +87,39 @@ describe("LiveSearch Component", () => {
     {
       id: 10402,
       name: "Music",
-    }
+    },
   ];
 
-    // Test case to check if the LiveSearch component renders without crashing
-  it('renders without crashing', () => {
+  // Test case to check if the LiveSearch component renders without crashing
+  it("renders without crashing", () => {
     render(<LiveSearch movies={mockMovies} genres={mockGenres} />);
-    expect(screen.getByPlaceholderText(/search movies.../i)).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/search movies.../i)
+    ).toBeInTheDocument();
   });
 
   // Test case to check if the movie titles are rendered correctly
-  it('renders movie titles', () => {
+  it("renders movie titles", () => {
     render(<LiveSearch movies={mockMovies} genres={mockGenres} />);
     expect(screen.getByText(mockMovies[0].title)).toBeInTheDocument();
     expect(screen.getByText(mockMovies[1].title)).toBeInTheDocument();
   });
 
   // Test case to check if the movie titles are filtered correctly
-    it('filters movie titles', () => {
-        render(<LiveSearch movies={mockMovies} genres={mockGenres} />);
-        fireEvent.change(screen.getByPlaceholderText(/search movies.../i), {
-        target: { value: 'Inception' },
-        });
-        expect(screen.getByText(mockMovies[0].title)).toBeInTheDocument();
-        expect(screen.queryByText(mockMovies[1].title)).not.toBeInTheDocument();
+  it("filters movie titles", () => {
+    render(<LiveSearch movies={mockMovies} genres={mockGenres} />);
+    fireEvent.change(screen.getByPlaceholderText(/search movies.../i), {
+      target: { value: "Inception" },
     });
+    expect(screen.getByText(mockMovies[0].title)).toBeInTheDocument();
+    expect(screen.queryByText(mockMovies[1].title)).not.toBeInTheDocument();
+  });
+
+  // Test case to check if the movie genres are rendered correctly
+  it("renders movie genres", () => {
+    render(<LiveSearch movies={mockMovies} genres={mockGenres} />);
+    expect(screen.getByText(mockGenres[0].name)).toBeInTheDocument();
+    expect(screen.getByText(mockGenres[1].name)).toBeInTheDocument();
+  });
+  
 });
