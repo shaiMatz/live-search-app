@@ -3,12 +3,13 @@ import Head from "next/head";
 import axios from "axios";
 import { useState } from "react";
 import LiveSearch from "../components/livesearch";
-
+import { ErrorBoundary } from "../Components/ErrorBoundary";
+import {ErrorThrowingComponent } from "../Components/ErrorThrowingComponent ";
+import  ErrorPage from "./_error"
 const API_KEY =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZTBhMzc1N2E4NTAzNjJkMTFhZjMwYTMxODhkODJmMyIsInN1YiI6IjY1OTdlYThlNjBjNTFkMjI2Yjk3ODlhYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.HNWpuajeQBVS4DEd_JYEUamU1NWCEN1fHxW9DUGdJWM";
 
   export async function getServerSideProps() {
-    const movieUrl = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`;
     const genreUrl = 'https://api.themoviedb.org/3/genre/movie/list?language=en';
   
     const options = {
@@ -81,7 +82,15 @@ export default function Home({ movies,genres, error }: MyPageProps) {
 
   return <main>
 <main>
+<ErrorBoundary  >
       <LiveSearch movies={movies} genres={genres} />
+      </ErrorBoundary>
+
+      {/* test for check if the _error.js is working */}
+      <ErrorBoundary  FallbackComponent={ErrorPage}
+      onReset={() => (location.href = '/')} >
+        <ErrorThrowingComponent shouldThrow={false} />
+      </ErrorBoundary>
     </main>
-  </main>;
+  </main>
 }

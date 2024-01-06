@@ -1,5 +1,6 @@
 // Import necessary hooks from React
 import { useState } from "react";
+import React from 'react';
 
 // Component to display individual movie details
 const MovieCard = ({ movie }) => {
@@ -14,6 +15,7 @@ const MovieCard = ({ movie }) => {
     <div className="max-w-sm rounded overflow-hidden shadow-lg m-4">
       <img
         className="w-full"
+        loading="lazy" 
         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
         alt={`Poster of ${movie.title}`}
       />
