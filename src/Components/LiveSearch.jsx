@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import MovieCard from "./Movie";
-import React from 'react';
+import React from "react";
 
 const LiveSearch = ({ movies, genres }) => {
   const [query, setQuery] = useState("");
@@ -12,6 +12,7 @@ const LiveSearch = ({ movies, genres }) => {
   const loader = useRef(null);
 
   const moviesPerPage = 20; // Adjust as needed
+  let uniqueMovies = [];
 
   // Function to sort movies based on the selected sort method
   const sortMovies = (moviesList) => {
@@ -39,7 +40,7 @@ const LiveSearch = ({ movies, genres }) => {
           movie?.title?.toLowerCase().includes(query.toLowerCase()) ||
           (movie?.release_date &&
             movie?.release_date
-            .toString()
+              .toString()
               .toLowerCase()
               .includes(query.toLowerCase())) ||
           movie?.overview?.toLowerCase().includes(query.toLowerCase()) ||
@@ -66,11 +67,13 @@ const LiveSearch = ({ movies, genres }) => {
           acc.push(movie.id);
         }
         return acc;
-        }, []);
+      }, []);
 
-        //remove duplicate movies
-        const uniqueMovies = sortedMovies.filter((movie) => !duplicateIds.includes(movie.id));
-        setDisplayedMovies(uniqueMovies.slice(0, pageNumber * moviesPerPage));
+      //remove duplicate movies
+    uniqueMovies = sortedMovies.filter(
+        (movie) => !duplicateIds.includes(movie.id)
+      );
+      setDisplayedMovies(uniqueMovies.slice(0, pageNumber * moviesPerPage));
     };
 
     filterAndSortMovies();
@@ -79,12 +82,15 @@ const LiveSearch = ({ movies, genres }) => {
   // Infinite scrolling logic
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loading) {
-          setLoading(true);
-          setPageNumber((prev) => prev + 1);
-        }
-      },
+        (entries) => {
+            if (entries[0].isIntersecting && !loading) {
+              const moreMoviesToLoad = displayedMovies.length < uniqueMovies.length;
+              if (moreMoviesToLoad) {
+                setLoading(true);
+                setPageNumber((prev) => prev + 1);
+              }
+            }
+          },
       {
         root: null,
         rootMargin: "20px",
@@ -145,21 +151,21 @@ const LiveSearch = ({ movies, genres }) => {
         </div>
       </div>
       <div className="flex flex-wrap gap-2 mb-4">
-      {/* Conditionally render genre filter */}
-      {genres && genres.length > 0 && (
-        <select
-          value={selectedGenre}
-          onChange={handleGenreChange}
-          className="border p-2 rounded mb-4"
-        >
-          <option value="">Select Genre</option>
-          {genres.map((genre) => (
-            <option key={genre.id} value={genre.id}>
-              {genre.name}
-            </option>
-          ))}
-        </select>
-      )}
+        {/* Conditionally render genre filter */}
+        {genres && genres.length > 0 && (
+          <select
+            value={selectedGenre}
+            onChange={handleGenreChange}
+            className="border p-2 rounded mb-4"
+          >
+            <option value="">Select Genre</option>
+            {genres.map((genre) => (
+              <option key={genre.id} value={genre.id}>
+                {genre.name}
+              </option>
+            ))}
+          </select>
+        )}
         <select
           value={sortMethod}
           onChange={(e) => setSortMethod(e.target.value)}
