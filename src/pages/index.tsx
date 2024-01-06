@@ -6,6 +6,8 @@ import LiveSearch from "../components/livesearch";
 import { ErrorBoundary } from "../Components/ErrorBoundary";
 import {ErrorThrowingComponent } from "../Components/ErrorThrowingComponent ";
 import  ErrorPage from "./_error"
+import React from 'react';
+
 const API_KEY =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZTBhMzc1N2E4NTAzNjJkMTFhZjMwYTMxODhkODJmMyIsInN1YiI6IjY1OTdlYThlNjBjNTFkMjI2Yjk3ODlhYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.HNWpuajeQBVS4DEd_JYEUamU1NWCEN1fHxW9DUGdJWM";
 
@@ -87,10 +89,10 @@ export default function Home({ movies,genres, error }: MyPageProps) {
       </ErrorBoundary>
 
       {/* test for check if the _error.js is working */}
-      <ErrorBoundary  FallbackComponent={ErrorPage}
+      {/* <ErrorBoundary  FallbackComponent={ErrorPage}
       onReset={() => (location.href = '/')} >
         <ErrorThrowingComponent shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary> */}
     </main>
   </main>
 }
