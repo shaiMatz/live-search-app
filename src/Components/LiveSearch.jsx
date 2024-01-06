@@ -36,14 +36,14 @@ const LiveSearch = ({ movies, genres }) => {
     const filterAndSortMovies = () => {
       let result = movies.filter(
         (movie) =>
-          movie.title.toLowerCase().includes(query.toLowerCase()) ||
-          (movie.release_date &&
-            movie.release_date
+          movie?.title?.toLowerCase().includes(query.toLowerCase()) ||
+          (movie?.release_date &&
+            movie?.release_date
             .toString()
               .toLowerCase()
               .includes(query.toLowerCase())) ||
-          movie.overview.toLowerCase().includes(query.toLowerCase()) ||
-          movie.vote_average
+          movie?.overview?.toLowerCase().includes(query.toLowerCase()) ||
+          movie?.vote_average
             .toString()
             .toLowerCase()
             .includes(query.toLowerCase())
@@ -56,7 +56,21 @@ const LiveSearch = ({ movies, genres }) => {
       }
 
       let sortedMovies = sortMovies(result);
-      setDisplayedMovies(sortedMovies.slice(0, pageNumber * moviesPerPage));
+      //check if there is 2 movies with the same id
+      const duplicateIds = sortedMovies.reduce((acc, movie, index) => {
+        if (
+          sortedMovies.findIndex(
+            (m) => m.id === movie.id && index !== sortedMovies.indexOf(m)
+          ) !== -1
+        ) {
+          acc.push(movie.id);
+        }
+        return acc;
+        }, []);
+
+        //remove duplicate movies
+        const uniqueMovies = sortedMovies.filter((movie) => !duplicateIds.includes(movie.id));
+        setDisplayedMovies(uniqueMovies.slice(0, pageNumber * moviesPerPage));
     };
 
     filterAndSortMovies();
@@ -131,6 +145,8 @@ const LiveSearch = ({ movies, genres }) => {
         </div>
       </div>
       <div className="flex flex-wrap gap-2 mb-4">
+      {/* Conditionally render genre filter */}
+      {genres && genres.length > 0 && (
         <select
           value={selectedGenre}
           onChange={handleGenreChange}
@@ -143,6 +159,7 @@ const LiveSearch = ({ movies, genres }) => {
             </option>
           ))}
         </select>
+      )}
         <select
           value={sortMethod}
           onChange={(e) => setSortMethod(e.target.value)}
@@ -155,9 +172,13 @@ const LiveSearch = ({ movies, genres }) => {
         </select>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {displayedMovies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
-        ))}
+        {displayedMovies.length > 0 ? (
+          displayedMovies.map((movie) => (
+            <MovieCard key={movie.id} movie={movie} />
+          ))
+        ) : (
+          <p className="text-center w-full">No results found</p> // No results message
+        )}
         {loading && <div className="loader"></div>}
         <div ref={loader} />
       </div>
