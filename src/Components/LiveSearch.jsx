@@ -9,6 +9,7 @@ const LiveSearch = ({ movies, genres }) => {
   const [displayedMovies, setDisplayedMovies] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isFiltered, setisFiltered] = useState(false);
   const loader = useRef(null);
 
   const moviesPerPage = 20; // Adjust as needed
@@ -57,6 +58,13 @@ const LiveSearch = ({ movies, genres }) => {
       }
 
       let sortedMovies = sortMovies(result);
+      //check if filter is applied
+      if (selectedGenre || sortMethod) {
+        setisFiltered(true);
+      } else {
+        setisFiltered(false);
+      }
+
       //check if there is 2 movies with the same id
       const duplicateIds = sortedMovies.reduce((acc, movie, index) => {
         if (
@@ -70,7 +78,7 @@ const LiveSearch = ({ movies, genres }) => {
       }, []);
 
       //remove duplicate movies
-    uniqueMovies = sortedMovies.filter(
+      uniqueMovies = sortedMovies.filter(
         (movie) => !duplicateIds.includes(movie.id)
       );
       setDisplayedMovies(uniqueMovies.slice(0, pageNumber * moviesPerPage));
@@ -82,15 +90,27 @@ const LiveSearch = ({ movies, genres }) => {
   // Infinite scrolling logic
   useEffect(() => {
     const observer = new IntersectionObserver(
-        (entries) => {
-            if (entries[0].isIntersecting && !loading) {
-              const moreMoviesToLoad = displayedMovies.length < uniqueMovies.length;
-              if (moreMoviesToLoad) {
-                setLoading(true);
-                setPageNumber((prev) => prev + 1);
-              }
+      (entries) => {
+        if (entries[0].isIntersecting && !loading) {
+          //if filter is applied check uniqueMovies length else check movies length
+          if (isFiltered) {
+            const moreMoviesToLoad =
+              displayedMovies.length < uniqueMovies.length;
+
+            if (moreMoviesToLoad) {
+              setLoading(true);
+              setPageNumber((prev) => prev + 1);
             }
-          },
+          } else {
+            const moreMoviesToLoad = displayedMovies.length < movies.length;
+
+            if (moreMoviesToLoad) {
+              setLoading(true);
+              setPageNumber((prev) => prev + 1);
+            }
+          }
+        }
+      },
       {
         root: null,
         rootMargin: "20px",
